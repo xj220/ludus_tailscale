@@ -50,6 +50,41 @@
       ansible.builtin.debug:
         msg: "{{ 'Tailscale connected successfully.' if tailscale_up_result.rc == 0 else 'Tailscale connection failed. Error: ' + tailscale_up_result.stderr }}"
 
+    - name: Configure the TS device as a Subnet Gateway (advertise-routes)
+      ansible.builtin.command: tailscale set --advertise-routes {{ tailscale_advertise_routes }}
+      register: tailscale_up_result
+      changed_when: tailscale_up_result.rc == 0
+      failed_when: false
+      become: true
+      when: tailscale_advertise_routes
+
+    - name: Configure ipforwarding ipv4
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: true
+      when: tailscale_advertise_routes
+
+    - name: Configure ipforwarding ipv6
+      ansible.posix.sysctl:
+        name: net.ipv6.conf.all.forwarding
+        value: '1'
+        sysctl_set: true
+      when: tailscale_advertise_routes
+
+    - name: Configure the TS device as a Subnet Gateway (advertise-routes)
+      ansible.builtin.command: tailscale set --advertise-routes {{ tailscale_advertise_routes }}
+      register: tailscale_up_result
+      changed_when: tailscale_up_result.rc == 0
+      failed_when: false
+      become: true
+      when: tailscale_advertise_routes
+
+    - name: Display Tailscale connection result
+      ansible.builtin.debug:
+        msg: "{{ 'Tailscale connected successfully.' if tailscale_up_result.rc == 0 else 'Tailscale connection failed. Error: ' + tailscale_up_result.stderr }}"
+      when: tailscale_advertise_routes
+
     - name: Check Tailscale connection status
       ansible.builtin.command: tailscale status
       register: tailscale_status
@@ -60,3 +95,4 @@
     - name: Display Tailscale status
       ansible.builtin.debug:
         msg: "{{ tailscale_status.stdout_lines }}"
+

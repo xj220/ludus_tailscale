@@ -6,3 +6,4 @@
 - name: Install Tailscale on Linux
   when: ansible_os_family != "Windows"
   ansible.builtin.include_tasks: linux-install.yaml
+  
